@@ -2,13 +2,21 @@ table.month {
   border: green solid 3px;
 }
 
-td.day {
-  text-align:center;
-  border: #22CC22 solid 1px;
+td {
   width: 5em;
+  text-align:center;
+}
+
+td.day {
+  border: #22CC22 solid 1px;
 }
 
 td.emptyday {
   border: #22CC22 solid 1px;
   background-color: #555555
+}
+
+td.remindday {
+  border: #CC2222 solid 2px;
+  background-color: #FFAAAA
 }

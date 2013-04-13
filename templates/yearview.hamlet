@@ -15,7 +15,7 @@
     <td class="day">9
     <td class="day">10
     <td class="day">11
-    <td class="day">12
+    <td class="remindday">12
     <td class="day">13
     <td class="day">14
   <tr>
@@ -32,7 +32,7 @@
     <td class="day">24
     <td class="day">25
     <td class="day">26
-    <td class="day">27
+    <td class="remindday">27
     <td class="day">28
   <tr>
     <td class="day">29
@@ -64,7 +64,7 @@
   <tr>
     <td class="day">15
     <td class="day">16
-    <td class="day">17
+    <td class="remindday">17
     <td class="day">18
     <td class="day">19
     <td class="day">20
