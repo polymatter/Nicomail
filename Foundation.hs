@@ -63,16 +63,19 @@ type Form x = Html -> MForm App App (FormResult x, Widget)
 -- Please see the documentation for the Yesod typeclass. There are a number
 -- of settings which can be configured by overriding methods here.
 instance Yesod App where
+    approot :: Yesod a => Approot a
     approot = ApprootMaster $ appRoot . settings
 
     -- Store session data on the client in encrypted cookies,
     -- default session idle timeout is 120 minutes
+    makeSessionBackend :: Yesod a => a -> IO (Maybe (SessionBackend a))
     makeSessionBackend _ = do
         key <- getKey "config/client_session_key.aes"
         let timeout = 120 * 60 -- 120 minutes
         (getCachedDate, _closeDateCache) <- clientSessionDateCacher timeout
         return . Just $ clientSessionBackend2 key getCachedDate
 
+    defaultLayout :: Yesod a => GWidget sub a () -> GHandler sub a RepHtml
     defaultLayout widget = do
         master <- getYesod
         mmsg <- getMessage
@@ -91,17 +94,20 @@ instance Yesod App where
 
     -- This is done to provide an optimization for serving static files from
     -- a separate domain. Please see the staticRoot setting in Settings.hs
+    urlRenderOverride :: Yesod a => a -> Route a -> Maybe Builder
     urlRenderOverride y (StaticR s) =
         Just $ uncurry (joinPath y (Settings.staticRoot $ settings y)) $ renderRoute s
     urlRenderOverride _ _ = Nothing
 
     -- The page to be redirected to when authentication is required.
+    authRoute :: Yesod a => a -> Maybe (Route a)
     authRoute _ = Just $ AuthR LoginR
 
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
     -- expiration dates to be set far in the future without worry of
     -- users receiving stale content.
+    addStaticContent :: Yesod a => Text -> Text -> ByteString -> GHandler sub a (Maybe (Either Text (Route a, [(Text, Text)])))
     addStaticContent =
         addStaticContentExternal minifym genFileName Settings.staticDir (StaticR . flip StaticRoute [])
       where
@@ -111,18 +117,22 @@ instance Yesod App where
             | otherwise   = base64md5 lbs
 
     -- Place Javascript at bottom of the body tag so the rest of the page loads first
+    jsLoader :: Yesod a => a -> ScriptLoadPosition a
     jsLoader _ = BottomOfBody
 
     -- What messages should be logged. The following includes all messages when
     -- in development, and warnings and errors in production.
+    shouldLog :: Yesod a => a -> LogSource -> LogLevel -> Bool
     shouldLog _ _source level =
         development || level == LevelWarn || level == LevelError
 
+    getLogger :: Yesod a => a -> IO Logger
     getLogger = return . appLogger
 
 -- How to run database actions.
 instance YesodPersist App where
     type YesodPersistBackend App = SqlPersist
+    runDB :: YesodPersist master => YesodDB sub master a -> GHandler sub master a
     runDB f = do
         master <- getYesod
         Database.Persist.Store.runPool
@@ -134,10 +144,14 @@ instance YesodAuth App where
     type AuthId App = UserId
 
     -- Where to send a user after successful login
+    loginDest :: YesodAuth master => master -> Route master
     loginDest _ = HomeR
+    
     -- Where to send a user after logout
+    logoutDest :: YesodAuth master => master -> Route master
     logoutDest _ = HomeR
 
+    getAuthId :: YesodAuth master => Creds master -> GHandler sub master (Maybe (AuthId master))
     getAuthId creds = runDB $ do
         x <- getBy $ UniqueUser $ credsIdent creds
         case x of
@@ -146,22 +160,18 @@ instance YesodAuth App where
                 fmap Just $ insert $ User (credsIdent creds) Nothing
 
     -- You can add other plugins like BrowserID, email or OAuth here
+    authPlugins :: YesodAuth master => master -> [AuthPlugin master]
     authPlugins _ = [authBrowserId, authGoogleEmail]
 
+    authHttpManager :: YesodAuth master => master -> Manager
     authHttpManager = httpManager
 
 -- This instance is required to use forms. You can modify renderMessage to
 -- achieve customized and internationalized form validation messages.
 instance RenderMessage App FormMessage where
+    renderMessage :: RenderMessage master message => master -> [Lang] -> master -> Text
     renderMessage _ _ = defaultFormMessage
 
 -- | Get the 'Extra' value, used to hold data from the settings.yml file.
 getExtra :: Handler Extra
 getExtra = fmap (appExtra . settings) getYesod
-
--- Note: previous versions of the scaffolding included a deliver function to
--- send emails. Unfortunately, there are too many different options for us to
--- give a reasonable default. Instead, the information is available on the
--- wiki:
---
--- https://github.com/yesodweb/yesod/wiki/Sending-email
