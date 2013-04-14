@@ -94,62 +94,41 @@
   <thead><tr><th colspan="7" class="month">March
   <tbody>
     <tr>
-      <td class="day"><a class="btn btn-link" href="">1
-      <td class="day"><button class="btn btn-link">2
-      <td class="day"><button class="btn btn-link">3
-      <td class="day"><button class="btn btn-link">4
-      <td class="day"><button class="btn btn-link">5
-      <td class="day"><button class="btn btn-link">6
-      <td class="day"><button class="btn btn-link">7
-
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/1">1
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/2">2
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/3">3
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/4">4
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/5">5
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/6">6
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/7">7
     <tr>
-      <td class="day"><button class="btn btn-link">8
-      <td class="day"><button class="btn btn-link">9
-      <td class="day"><button class="btn btn-link">10
-      <td class="day"><button class="btn btn-link">11
-      <td class="day"><button class="btn btn-link">12
-      <td class="day"><button class="btn btn-link">13
-      <td class="day"><button class="btn btn-link">14
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/8">8
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/9">9
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/10">10
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/11">11
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/12">12
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/13">13
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/14">14
     <tr>
-      <td class="day"><button class="btn btn-link">15
-      <td class="day"><button class="btn btn-link">16
-      <td class="day"><button class="btn btn-link">17
-      <td class="day"><button class="btn btn-link">11
-      <td class="day"><button class="btn btn-link">12
-      <td class="day"><button class="btn btn-link">13
-      <td class="day"><button class="btn btn-link">14
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/15">15
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/16">16
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/17">17
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/18">18
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/19">19
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/20">20
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/21">21
     <tr>
-      <td class="day">
-        <label class="checkbox">
-          <input type="checkbox">22
-      <td class="day">
-        <label class="checkbox">
-          <input type="checkbox">23
-      <td class="day">
-        <label class="checkbox">
-          <input type="checkbox">24
-      <td class="day">
-        <label class="checkbox">
-          <input type="checkbox">25
-      <td class="day">
-        <label class="checkbox">
-          <input type="checkbox">26
-      <td class="day">
-        <label class="checkbox">
-          <input type="checkbox">27
-      <td class="day">
-        <label class="checkbox">
-          <input type="checkbox">28
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/22">22
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/23">23
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/24">24
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/25">25
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/26">26
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/27">27
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/28">28
     <tr>
-      <td class="day">
-        <label class="checkbox">
-          <input type="checkbox">29
-      <td class="day">
-        <label class="checkbox">
-          <input type="checkbox">30
-      <td class="day">
-        <label class="checkbox">
-          <input type="checkbox">31
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/29">29
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/30">30
+      <td class="day"><a class="btn btn-link" href="http://112358.eu:3000/reminders/31">31
       <td class="emptyday">
       <td class="emptyday">
       <td class="emptyday">

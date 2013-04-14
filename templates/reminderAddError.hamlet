@@ -1,0 +1,5 @@
+
+<form method=post enctype=#{enctype}>
+  ^{reminderForm}
+  <div>
+    <input type=submit value="Save">
