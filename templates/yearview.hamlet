@@ -1,4 +1,8 @@
-<h1>Reminders for &lt;Email address&gt;
+<h1>Reminders
+
+<p>An email will be sent to &lt;email address&gt on dates that have been checked
+
+<p>For testing we will want to be able to change the date
 
 <table class="month">
   <tr><th colspan="7" class="month">January
@@ -86,45 +90,66 @@
     <td class="emptyday">
     <td class="emptyday">
 
-<table class="table-striped month">
-  <tr><th colspan="7" class="month">March
+<table class="month">
+  <thead><tr><th colspan="7" class="month">March
   <tbody>
     <tr>
-      <td class="day">1
-      <td class="day">2
-      <td class="day">3
-      <td class="day">4
-      <td class="day">5
-      <td class="day">6
-      <td class="day">7
+      <td class="day"><a class="btn btn-link" href="">1
+      <td class="day"><button class="btn btn-link">2
+      <td class="day"><button class="btn btn-link">3
+      <td class="day"><button class="btn btn-link">4
+      <td class="day"><button class="btn btn-link">5
+      <td class="day"><button class="btn btn-link">6
+      <td class="day"><button class="btn btn-link">7
+
     <tr>
-      <td class="day">8
-      <td class="day">9
-      <td class="day">10
-      <td class="day">11
-      <td class="day">12
-      <td class="day">13
-      <td class="day">14
+      <td class="day"><button class="btn btn-link">8
+      <td class="day"><button class="btn btn-link">9
+      <td class="day"><button class="btn btn-link">10
+      <td class="day"><button class="btn btn-link">11
+      <td class="day"><button class="btn btn-link">12
+      <td class="day"><button class="btn btn-link">13
+      <td class="day"><button class="btn btn-link">14
     <tr>
-      <td class="day">15
-      <td class="day">16
-      <td class="day">17
-      <td class="day">18
-      <td class="day">19
-      <td class="day">20
-      <td class="day">21
+      <td class="day"><button class="btn btn-link">15
+      <td class="day"><button class="btn btn-link">16
+      <td class="day"><button class="btn btn-link">17
+      <td class="day"><button class="btn btn-link">11
+      <td class="day"><button class="btn btn-link">12
+      <td class="day"><button class="btn btn-link">13
+      <td class="day"><button class="btn btn-link">14
     <tr>
-      <td class="day">22
-      <td class="day">23
-      <td class="day">24
-      <td class="day">25
-      <td class="day">26
-      <td class="day">27
-      <td class="day">28
+      <td class="day">
+        <label class="checkbox">
+          <input type="checkbox">22
+      <td class="day">
+        <label class="checkbox">
+          <input type="checkbox">23
+      <td class="day">
+        <label class="checkbox">
+          <input type="checkbox">24
+      <td class="day">
+        <label class="checkbox">
+          <input type="checkbox">25
+      <td class="day">
+        <label class="checkbox">
+          <input type="checkbox">26
+      <td class="day">
+        <label class="checkbox">
+          <input type="checkbox">27
+      <td class="day">
+        <label class="checkbox">
+          <input type="checkbox">28
     <tr>
-      <td class="day">29
-      <td class="day">30
-      <td class="day">31
+      <td class="day">
+        <label class="checkbox">
+          <input type="checkbox">29
+      <td class="day">
+        <label class="checkbox">
+          <input type="checkbox">30
+      <td class="day">
+        <label class="checkbox">
+          <input type="checkbox">31
       <td class="emptyday">
       <td class="emptyday">
       <td class="emptyday">
