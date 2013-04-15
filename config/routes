@@ -5,4 +5,5 @@
 /robots.txt RobotsR GET
 
 / HomeR GET POST
-/reminders ReminderR GET
+/reminders ReminderindexR GET
+/reminders/#ReminderId ReminderR GET POST
