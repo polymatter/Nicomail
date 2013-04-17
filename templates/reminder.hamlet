@@ -1,10 +1,9 @@
 
-The Reminder information goes here
-
-<p>Previous Entry:
+<p>
+  <h2>
+    Previous Entry:
 <p>#{reminderContent reminderR}
 
-<form method=post>
-  ^{reminderForm}
-  <div>
+  <form method=post>
+    ^{reminderForm}
     <input type=submit value="Save">

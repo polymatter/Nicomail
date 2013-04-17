@@ -3,6 +3,7 @@ module Handler.Reminder where
 
 import Import
 import Yesod.Form.Nic (YesodNic, nicHtmlField)
+--import Yesod.Form.Jquery --may be interesting date stuff in here for later
 instance YesodNic App
 
 -- insert :: val -> m (Key val)
@@ -20,9 +21,20 @@ postReminderR reminderId = do
       setTitle "Please correct your entry form"
       $(widgetFile "reminderAddError")
 
+reminderBox :: FieldSettings master
+reminderBox = FieldSettings { 
+  fsId = Just "reminderBox", 
+  fsName = Just "reminderBox", 
+  fsLabel = "What do you want to remember about this day?",
+  fsTooltip = Nothing,
+  fsAttrs = [("class", "reminderBox")]
+  }
+
+-- renderDivs :: FormRender sub master a
+-- areq :: Field sub master a -> FieldSettings master -> Maybe a -> AForm sub master a
 enterReminder :: Html -> Form Reminder
 enterReminder previousContent = renderDivs $ Reminder
-  <$> areq nicHtmlField "What do you want to remember about this day?" (Just previousContent)
+    <$> areq nicHtmlField reminderBox (Just previousContent)
 
 getReminderindexR :: Handler RepHtml
 getReminderindexR = do 
