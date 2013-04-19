@@ -4,7 +4,40 @@ module Handler.Reminder where
 import Import
 import Yesod.Form.Nic (YesodNic, nicHtmlField)
 --import Yesod.Form.Jquery --may be interesting date stuff in here for later
+import Network.Mail.Mime
+import Text.Blaze.Html.Renderer.Text (renderHtml)
+import Control.Concurrent
+import Control.Monad
+import Yesod.Content
+
 instance YesodNic App
+
+-- liftIO :: IO a -> m a
+getSendemailR :: ReminderId -> Handler RepHtml
+getSendemailR reminderId = do
+  reminder <- runDB (get404 reminderId)
+  runInnerHandler <- handlerToIO
+  liftIO $ forkIO $ runInnerHandler $ do
+    liftIO $ testmail (reminderContent reminder) >>= renderSendMail
+  redirect $ ReminderR reminderId
+
+testmail :: Html -> IO Mail
+testmail content = 
+  mymail 
+    "glisher_rock@hotmail.com" 
+    "polymatter@112358.eu" 
+    "Test Reminder Email"
+    (renderHtml content)
+
+--mymail :: Text -> Text -> Text -> Data.Text.Lazy.Internal.Text -> IO Mail
+mymail toaddr fromaddr title contents = 
+  simpleMail
+    (Address (Just toaddr)   toaddr)
+    (Address (Just fromaddr) fromaddr )
+    title
+    contents
+    contents
+    []
 
 -- insert :: val -> m (Key val)
 -- update :: Key val -> [Update val] -> m ()

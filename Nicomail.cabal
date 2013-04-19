@@ -72,6 +72,9 @@ library
                  , conduit                       >= 1.0
                  , monad-logger                  >= 0.3
                  , fast-logger                   >= 0.3
+                 , mime-mail
+                 , blaze-html
+                 , transformers
 
 executable         Nicomail
     if flag(library-only)
@@ -89,7 +92,7 @@ test-suite test
     type:              exitcode-stdio-1.0
     main-is:           main.hs
     hs-source-dirs:    tests
-    ghc-options:       -Wall
+    ghc-options:       -Wall -threaded
 
     build-depends: base
                  , Nicomail
