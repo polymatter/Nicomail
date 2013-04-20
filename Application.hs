@@ -18,12 +18,29 @@ import Network.HTTP.Conduit (newManager, def)
 import Control.Monad.Logger (runLoggingT)
 import System.IO (stdout)
 import System.Log.FastLogger (mkLogger)
+import Network.Mail.Mime
+import Text.Blaze.Html.Renderer.Text (renderHtml)
+import Yesod.Content
+import Control.Concurrent
 
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
 import Handler.Home
 import Handler.Reminder
 
+
+mailToAddr :: Address
+mailToAddr = Address (Just "Username") "glisher_rock@hotmail.com"
+
+mailFromAddr :: Address
+mailFromAddr = Address (Just "Nicomail app") "polymatter@112358.eu"
+
+--mkMailMsg :: Either Html Text -> IO Mail
+--mkMailMsg (Left htmlContent) = mkMailMsg (Right (renderHtml htmlContent))
+--mkMailMsg (Right content) = 
+mkMailMsg content =
+  simpleMail mailToAddr mailFromAddr "Test Reminder Email" content content []
+        
 -- This line actually creates our YesodDispatch instance. It is the second half
 -- of the call to mkYesodData which occurs in Foundation.hs. Please see the
 -- comments there for more details.
@@ -67,6 +84,10 @@ makeFoundation conf = do
     runLoggingT
         (Database.Persist.Store.runPool dbconf (runMigration migrateAll) p)
         (messageLoggerSource foundation logger)
+
+    -- Start a thread that will periodically send email reminders
+    forkIO $ do 
+      sequence_ $ map (\x -> mkMailMsg x >>= renderSendMail >> threadDelay 10000000) ["hello", "hell", "hel", "he", "h"]
 
     return foundation
 
