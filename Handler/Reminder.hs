@@ -7,8 +7,7 @@ import Yesod.Form.Nic (YesodNic, nicHtmlField)
 import Network.Mail.Mime
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Control.Concurrent
-import Control.Monad
-import Yesod.Content
+import Data.Time
 
 instance YesodNic App
 
@@ -17,9 +16,25 @@ getSendemailR :: ReminderId -> Handler RepHtml
 getSendemailR reminderId = do
   reminder <- runDB (get404 reminderId)
   runInnerHandler <- handlerToIO
-  liftIO $ forkIO $ runInnerHandler $ do
+  _ <- liftIO $ forkIO $ runInnerHandler $ do
     liftIO $ testmail (reminderContent reminder) >>= renderSendMail
   redirect $ ReminderR reminderId
+
+getSendTodaysEmailR :: Handler RepHtml
+getSendTodaysEmailR = do
+  nowDay <- (liftIO getCurrentTime) >>= (return . thd . toGregorian . utctDay) 
+  maybeReminder <- runDB $ selectFirst [ReminderContent !=. "secret day"] [OffsetBy nowDay, LimitTo 1]
+  runInnerHandler <- handlerToIO  
+  case (maybeReminder :: Maybe (Entity Reminder)) of
+    Nothing -> do 
+      _ <- liftIO $ forkIO $ runInnerHandler $ do
+        liftIO $ testmail "Nothing here mate" >>= renderSendMail
+      redirect ( ReminderindexR )
+    Just reminderEntity -> do
+      _ <- liftIO $ forkIO $ runInnerHandler $ do
+        liftIO $ (testmail . reminderContent . entityVal) reminderEntity >>= renderSendMail
+      redirect ( ReminderindexR )
+  where thd = \(_, _, c) -> c
 
 testmail :: Html -> IO Mail
 testmail content = 

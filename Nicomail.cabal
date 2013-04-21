@@ -75,6 +75,7 @@ library
                  , mime-mail
                  , blaze-html
                  , transformers
+                 , time
 
 executable         Nicomail
     if flag(library-only)

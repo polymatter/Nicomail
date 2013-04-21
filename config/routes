@@ -8,3 +8,4 @@
 /reminders ReminderindexR GET
 /reminders/#ReminderId ReminderR GET POST
 /reminders/sendEmail/#ReminderId SendemailR GET
+/sendTodaysEmail SendTodaysEmailR GET
