@@ -1,1 +1,5 @@
 An app to send email "remember when" reminders
+
+Requires some configuration with cron.
+
+Need to set crontab to call curl to the "SendTodaysEmail" url (currently /sendTodaysEmail)
