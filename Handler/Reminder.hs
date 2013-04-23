@@ -22,7 +22,7 @@ getSendemailR reminderId = do
 
 getSendTodaysEmailR :: Handler RepHtml
 getSendTodaysEmailR = do
-  nowDay <- (liftIO getCurrentTime) >>= (return . thd . toGregorian . utctDay) 
+  (nowDay+1) <- (liftIO getCurrentTime) >>= (return . thd . toGregorian . utctDay) 
   maybeReminder <- runDB $ selectFirst [ReminderContent !=. "secret day"] [OffsetBy nowDay, LimitTo 1]
   runInnerHandler <- handlerToIO  
   case (maybeReminder :: Maybe (Entity Reminder)) of
@@ -39,7 +39,7 @@ getSendTodaysEmailR = do
 testmail :: Html -> IO Mail
 testmail content = 
   mymail 
-    "glisher_rock@hotmail.com" 
+    "nicomail@mailinator.com" 
     "polymatter@112358.eu" 
     "Test Reminder Email"
     (renderHtml content)
@@ -48,7 +48,7 @@ testmail content =
 mymail toaddr fromaddr title contents = 
   simpleMail
     (Address (Just toaddr)   toaddr)
-    (Address (Just fromaddr) fromaddr )
+    (Address (Just "The Memory Dopefish of Memories") "dopefish@gov.com" )
     title
     contents
     contents
