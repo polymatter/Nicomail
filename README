@@ -1,5 +1,26 @@
 An app to send email "remember when" reminders
 
-Requires some configuration with cron.
+Requires some configuration with cron or equivalent in order to wake the server up to send the reminder emails. Also requires sendmail to actually send the emails and curl to trigger the webserver to send the emails.
 
-Need to set crontab to call curl to the "SendTodaysEmail" url (currently /sendTodaysEmail)
+cron is a standard UNIX utility that should be on any UNIX server. If this is deployed on a Windows server, there is a utility called AT that does the analogous thing. If this is deployed on a cloud service provider such as Heroku, there will almost certainly be a way of configuring cron jobs. But since we are only going to configure a cronjob to poke the server to send todays email, a better option would be to use a webcron service like https://www.setcronjob.com/prices where daily cronjobs are free.
+
+sendmail is a basic UNIX utility that sends emails and should also be standard on any UNIX server. I expect Haskell to cry foul if you compile without it present and would not be surprised if cabal (the Haskell build program) installs it as part of the program dependencies.
+
+curl is more advanced and may not be installed. You may potentially be able to use wget (which is more standard utility) instead if you can not use/install curl for whatever reason. Use the command "apt-get install curl" in order to install. You may need to "sudo apt-get install curl" depending on your user privileges. 
+
+Setting up the Cron job
+-----------------------
+
+crontab -e
+
+This command opens the users crontab for editing. It will crate a crontab if necessary
+
+Add the following line to the file:
+03 22 * * * curl (server name)/sendTodaysEmail
+
+This means on minute 03 of the 22nd hour everyday it will invoke the curl command to poke the server into sending todays emails.
+
+Installing
+----------
+
+Requires cabal in order to build the dependencies. Type "cabal update && cabal install" in order to do so. The development server can be started with "yesod devel"
