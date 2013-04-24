@@ -12,13 +12,13 @@ import Data.Time
 instance YesodNic App
 
 -- liftIO :: IO a -> m a
-getSendemailR :: ReminderId -> Handler RepHtml
-getSendemailR reminderId = do
-  reminder <- runDB (get404 reminderId)
-  runInnerHandler <- handlerToIO
-  _ <- liftIO $ forkIO $ runInnerHandler $ do
-    liftIO $ testmail (reminderContent reminder) >>= renderSendMail
-  redirect $ ReminderR reminderId
+--getSendemailR :: ReminderId -> Handler RepHtml
+--getSendemailR reminderId = do
+--  reminder <- runDB (get404 reminderId)
+--  runInnerHandler <- handlerToIO
+--  _ <- liftIO $ forkIO $ runInnerHandler $ do
+--    liftIO $ testmail (reminderContent reminder) >>= renderSendMail
+--  redirect $ ReminderindexR
 
 getSendTodaysEmailR :: Handler RepHtml
 getSendTodaysEmailR = do
@@ -57,14 +57,19 @@ mymail toaddr fromaddr title contents =
 -- insert :: val -> m (Key val)
 -- update :: Key val -> [Update val] -> m ()
 -- replace :: Key val -> val -> m ()
-postReminderR :: ReminderId -> Handler RepHtml
-postReminderR reminderId = do
-  ((res, reminderForm),enctype) <- runFormPost (enterReminder "")
+postReminderR :: Int -> Int -> Handler RepHtml
+postReminderR day month = do
+  ((res, reminderForm),enctype) <- runFormPost (enterReminder day month "")
   case res of
-    FormSuccess reminderR ->
-      runDB (update reminderId [ReminderContent =. (reminderContent reminderR)])
-      >>
-      (redirect $ ReminderR reminderId)
+    FormSuccess reminderR -> do
+      mayberem <- runDB $ selectFirst [ReminderDay ==. day, ReminderMonth ==. month] []
+      case mayberem of
+        Just reminderEntity -> do
+          runDB (update (entityKey reminderEntity) [ReminderContent =. (reminderContent reminderR)])
+          redirect $ ReminderR day month
+        Nothing -> defaultLayout $ do
+          setTitle "Can not find that date" 
+          $(widgetFile "reminderError")
     _ -> defaultLayout $ do
       setTitle "Please correct your entry form"
       $(widgetFile "reminderAddError")
@@ -80,9 +85,11 @@ reminderBox = FieldSettings {
 
 -- renderDivs :: FormRender sub master a
 -- areq :: Field sub master a -> FieldSettings master -> Maybe a -> AForm sub master a
-enterReminder :: Html -> Form Reminder
-enterReminder previousContent = renderDivs $ Reminder
-    <$> areq nicHtmlField reminderBox (Just previousContent)
+enterReminder :: Int -> Int -> Html -> Form Reminder
+enterReminder day month content = renderDivs $ Reminder
+    <$> areq hiddenField "" (Just day)
+    <*> areq hiddenField "" (Just month)
+    <*> areq nicHtmlField reminderBox (Just content)
 
 getReminderindexR :: Handler RepHtml
 getReminderindexR = do 
@@ -90,22 +97,30 @@ getReminderindexR = do
   defaultLayout $(widgetFile "yearview-wrapper")
 
 -- defaultLayout :: Yesod a => GWidget sub a () -> GHandler sub a RepHtml
-getReminderR :: ReminderId -> Handler RepHtml
-getReminderR reminderId = do
-  mayberem <- runDB $ get reminderId
+getReminderR :: Int -> Int -> Handler RepHtml
+getReminderR day month = do
+  mayberem <- runDB $ selectFirst [ReminderDay ==. day, ReminderMonth ==. month] []
   case mayberem of
     Nothing -> do
-      reminderId <- runDB $ insert blankReminder
-      reminderR <- return blankReminder
-      (reminderForm, enctype) <- generateFormPost (enterReminder (reminderContent reminderR))
+      _ <- runDB $ insert $ blankReminder day month
+      reminderR <- return $ blankReminder day month
+      (reminderForm, enctype) <- generateFormPost (enterReminder day month "")
       yearview <- return $(widgetFile "yearview")
       reminder <- return $(widgetFile "reminder")
-      defaultLayout $ do $(widgetFile "reminder-wrapper")
-    Just reminderR -> do
-      (reminderForm, enctype) <- generateFormPost (enterReminder (reminderContent reminderR))
+      defaultLayout $ do $(widgetFile "reminder-wrapper")     
+    Just reminderEntity -> do
+      reminderR <- return $ entityVal reminderEntity
+      (reminderForm, enctype) <- generateFormPost (enterReminder day month (reminderContent reminderR))
       yearview <- return $(widgetFile "yearview")
       reminder <- return $(widgetFile "reminder")
       defaultLayout $ do $(widgetFile "reminder-wrapper")      
                          
-blankReminder :: Reminder
-blankReminder = Reminder "blank"
+blankReminder :: Int -> Int -> Reminder
+blankReminder day month = Reminder day month "blank"
+
+-- runDB :: (YesodPersist master) 
+--    => YesodDB sub master a -> GHandler sub master a
+
+-- insert 
+
+-- seedDatabase

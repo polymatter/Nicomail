@@ -11,5 +11,7 @@ Email
  -- By default this file is used in Model.hs (which is imported by Foundation.hs)
 
 Reminder
-    content Html
+    day     Int
+    month   Int
+    content Html     
     deriving
