@@ -4,8 +4,7 @@ import Prelude
 import Yesod
 import Yesod.Static
 import Yesod.Auth
-import Yesod.Auth.BrowserId
-import Yesod.Auth.GoogleEmail
+import Yesod.Auth.Email
 import Yesod.Default.Config
 import Yesod.Default.Util (addStaticContentExternal)
 import Network.HTTP.Conduit (Manager)
@@ -18,8 +17,14 @@ import Settings (widgetFile, Extra (..))
 import Model
 import Text.Jasmine (minifym)
 import Web.ClientSession (getKey)
-import Text.Hamlet (hamletFile)
+import Text.Hamlet (hamletFile, shamlet)
 import System.Log.FastLogger (Logger)
+import Network.Mail.Mime
+import Text.Shakespeare.Text (stext)
+import qualified Data.Text.Lazy.Encoding
+import Control.Monad (join)
+import Data.Maybe (isJust)
+import Text.Blaze.Html.Renderer.Utf8 (renderHtml)
 
 -- | The site argument for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -79,6 +84,7 @@ instance Yesod App where
     defaultLayout widget = do
         master <- getYesod
         mmsg <- getMessage
+        maybeLogin <- maybeAuthId
 
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
@@ -145,26 +151,102 @@ instance YesodAuth App where
 
     -- Where to send a user after successful login
 --  loginDest :: YesodAuth master => master -> Route master
-    loginDest _ = HomeR
+    loginDest _ = ReminderindexR
     
     -- Where to send a user after logout
 --  logoutDest :: YesodAuth master => master -> Route master
-    logoutDest _ = HomeR
+    logoutDest _ = ReminderindexR
 
 --  getAuthId :: YesodAuth master => Creds master -> GHandler sub master (Maybe (AuthId master))
+--    getAuthId creds = runDB $ do
+--        x <- getBy $ UniqueUser $ credsIdent creds
+--        case x of
+--            Just (Entity uid _) -> return $ Just uid
+--            Nothing -> do
+--                fmap Just $ insert $ User (credsIdent creds) Nothing
+
     getAuthId creds = runDB $ do
-        x <- getBy $ UniqueUser $ credsIdent creds
-        case x of
-            Just (Entity uid _) -> return $ Just uid
-            Nothing -> do
-                fmap Just $ insert $ User (credsIdent creds) Nothing
+        x <- insertBy $ User (credsIdent creds) Nothing Nothing False
+        return $ Just $
+          case x of
+            Left (Entity userid _) -> userid -- newly added user
+            Right userid           -> userid -- existing user
 
     -- You can add other plugins like BrowserID, email or OAuth here
 --  authPlugins :: YesodAuth master => master -> [AuthPlugin master]
-    authPlugins _ = [authBrowserId, authGoogleEmail]
+--  authPlugins _ = [authBrowserId, authGoogleEmail]
+    authPlugins _ = [authEmail]
 
 --  authHttpManager :: YesodAuth master => master -> Manager
     authHttpManager = httpManager
+
+-- email auth specific code
+instance YesodAuthEmail App where
+  type AuthEmailId App = UserId
+  
+  addUnverified email verkey = 
+    runDB $ insert $ User email Nothing (Just verkey) False
+    
+  getVerifyKey = runDB . fmap (join . fmap userVerkey) . get
+  
+  setVerifyKey uid key = runDB $ update uid [UserVerkey =. Just key]
+
+  verifyAccount uid = runDB $ do
+    mu <- get uid
+    case mu of
+      Nothing -> return Nothing
+      Just _ -> do
+        update uid [UserVerified =. True]
+        return $ Just uid
+        
+  getPassword = runDB . fmap (join . fmap userPassword) . get
+  
+  setPassword uid pass = runDB $ update uid [UserPassword =. Just pass]
+
+  getEmailCreds email = runDB $ do
+    mu <- getBy $ UniqueUser email
+    case mu of
+      Nothing -> return Nothing
+      Just (Entity uid u) -> return $ Just EmailCreds
+                             { emailCredsId = uid
+                             , emailCredsAuthId = Just uid
+                             , emailCredsStatus = isJust $ userPassword u
+                             , emailCredsVerkey = userVerkey u
+                             }
+                             
+  getEmail = runDB . fmap (fmap userEmail) . get
+
+  sendVerifyEmail email _ verurl =
+    liftIO $ renderSendMail (emptyMail $ Address Nothing "noreply") 
+       { mailTo = [Address Nothing email]
+       , mailHeaders = [("Subject", "Verify your email address")]
+       , mailParts = [[textPart, htmlPart]]
+       }
+    where
+      textPart = Part { partType = "text/plain; charset=utf-8"
+                      , partEncoding = None 
+                      , partFilename = Nothing
+                      , partHeaders = []
+                      , partContent = Data.Text.Lazy.Encoding.encodeUtf8 [stext| 
+Please confirm your email address by clicking on the link below
+                                               
+\#{verurl}
+
+Thank You
+|]
+                      }
+      htmlPart = Part { partType = "text/html; charset=utf-8"
+                      , partEncoding = None
+                      , partFilename  = Nothing
+                      , partHeaders = []
+                      , partContent = renderHtml [shamlet|
+<p>Please configm your email address by clicking on the link below.
+<p>
+  <a href=#{verurl}>#{verurl}
+<p>Thank you
+|]
+                      }
+
 
 -- This instance is required to use forms. You can modify renderMessage to
 -- achieve customized and internationalized form validation messages.

@@ -23,6 +23,16 @@ $newline never
         <script>
           document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
     <body>
+        <h1><a class="brand" href=@{ReminderindexR}>The Dopefish Journal of Memories
+        $maybe _ <- maybeLogin
+              <p>Welcome subject # #{show maybeLogin}
+              <p>
+                <a href=@{AuthR LogoutR}>Logout
+              <p>  
+        $nothing
+              <p>
+                <a href=@{AuthR LoginR}>Login
+              <p>
         <div class="container">
             <header>
             <div id="main" role="main">

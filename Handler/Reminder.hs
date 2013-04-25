@@ -38,14 +38,14 @@ getSendTodaysEmailR = do
 
 testmail :: Html -> IO Mail
 testmail content = 
-  mymail 
+  mkMail 
     "nicomail@mailinator.com" 
     "polymatter@112358.eu" 
     "Test Reminder Email"
     (renderHtml content)
 
 --mymail :: Text -> Text -> Text -> Data.Text.Lazy.Internal.Text -> IO Mail
-mymail toaddr fromaddr title contents = 
+mkMail toaddr fromaddr title contents = 
   simpleMail
     (Address (Just toaddr)   toaddr)
     (Address (Just "The Memory Dopefish of Memories") "dopefish@gov.com" )
