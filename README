@@ -20,6 +20,8 @@ Add the following line to the file:
 
 This means on minute 03 of the 22nd hour everyday it will invoke the curl command to poke the server into sending todays emails.
 
+NOTE: This means you can not change when email gets sent from within the app itself ... unless the app itself writes to the crontab file. 
+
 Installing
 ----------
 
