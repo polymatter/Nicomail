@@ -25,4 +25,4 @@ NOTE: This means you can not change when email gets sent from within the app its
 Installing
 ----------
 
-Requires cabal in order to build the dependencies. Type "cabal update && cabal install" in order to do so. The development server can be started with "yesod devel"
+Requires cabal in order to build the dependencies. Type "cabal update && cabal install" in order to do so. The development server can be started with "yesod devel".
