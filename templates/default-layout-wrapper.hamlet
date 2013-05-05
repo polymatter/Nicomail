@@ -25,7 +25,7 @@ $newline never
     <body>
         <h1><a class="brand" href=@{ReminderindexR}>The Dopefish Journal of Memories
         $maybe userId <- maybeLogin
-              <p>Welcome subject # #{show userId}
+              <p>Welcome subject #{userEmail $ entityVal userId}
               <p>
                 <a href=@{AuthR LogoutR}>Logout
               <p>
