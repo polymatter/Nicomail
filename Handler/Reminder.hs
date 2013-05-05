@@ -8,6 +8,8 @@ import Network.Mail.Mime
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Control.Concurrent
 import Data.Time
+import Data.Text
+import Data.Text.Lazy
 
 instance YesodNic App
 
@@ -22,22 +24,35 @@ instance YesodNic App
 
 getSendTodaysEmailR :: Handler RepHtml
 getSendTodaysEmailR = do
-  (nowDay+1) <- (liftIO getCurrentTime) >>= (return . thd . toGregorian . utctDay) 
-  maybeReminder <- runDB $ selectFirst [ReminderContent !=. "secret day"] [OffsetBy nowDay, LimitTo 1]
+  (nowYear, nowMonth, nowDay) <- (liftIO getCurrentTime) >>= (return . toGregorian . utctDay) 
+  maybeReminder <- runDB $ selectFirst 
+                   [ReminderContent !=. "secret day", ReminderDay ==. nowDay, ReminderMonth ==. nowMonth] 
+                   [LimitTo 1]
   runInnerHandler <- handlerToIO  
   case (maybeReminder :: Maybe (Entity Reminder)) of
     Nothing -> do 
-      _ <- liftIO $ forkIO $ runInnerHandler $ do
-        liftIO $ testmail "Nothing here mate" >>= renderSendMail
+      _ <- liftIO $ forkIO $ runInnerHandler $
+        liftIO $ (mailNotFound nowDay nowMonth) >>= renderSendMail
       redirect ( ReminderindexR )
     Just reminderEntity -> do
       _ <- liftIO $ forkIO $ runInnerHandler $ do
-        liftIO $ (testmail . reminderContent . entityVal) reminderEntity >>= renderSendMail
+        liftIO $ (mailReminder . reminderContent . entityVal) reminderEntity >>= renderSendMail
       redirect ( ReminderindexR )
   where thd = \(_, _, c) -> c
 
-testmail :: Html -> IO Mail
-testmail content = 
+mailNotFound day month =
+  mkMail
+    "nicomail@mailinator.com"
+    "polymatter@112358.eu"
+    "No Reminder Email Today"
+    (renderHtml . toHtml . Data.Text.Lazy.concat $
+     ["No Reminder email found for", 
+      Data.Text.Lazy.pack . show $ day,
+      "/",
+      Data.Text.Lazy.pack . show $ month] )
+
+--mailReminder :: Text -> IO Mail
+mailReminder content = 
   mkMail 
     "nicomail@mailinator.com" 
     "polymatter@112358.eu" 
