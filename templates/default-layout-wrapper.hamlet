@@ -25,15 +25,10 @@ $newline never
     <body>
         <h1><a class="brand" href=@{ReminderindexR}>The Dopefish Journal of Memories
         $maybe userId <- maybeLogin
-           $maybe emailAd <- getBy userId
-              <p>Welcome subject # #{emailAd}
+              <p>Welcome subject # #{show userId}
               <p>
                 <a href=@{AuthR LogoutR}>Logout
               <p>
-           $nothing
-              <p>Failed to verify user
-                <a href=@{AuthR LoginR}>Login                
-              <p>  
         $nothing
               <p>
                 <a href=@{AuthR LoginR}>Login
