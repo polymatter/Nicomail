@@ -21,5 +21,7 @@ User
 Reminder
     day     DoM -- (Day of Month) Int between 1 and 31
     month   MoY -- (Month of Year) Int between 1 and 12
-    content Html   
+    content Html 
+    ownerId UserId Eq -- foreign key to User   
+    UniqueReminder day month ownerId
     deriving
