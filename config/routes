@@ -6,5 +6,5 @@
 
 /                    HomeR            GET POST
 /reminders           ReminderindexR   GET
-/reminders/#Int/#Int ReminderR        GET POST
+/reminders/#DoM/#MoY ReminderR        GET POST
 /sendTodaysEmail     SendTodaysEmailR GET

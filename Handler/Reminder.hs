@@ -26,18 +26,18 @@ getSendTodaysEmailR :: Handler RepHtml
 getSendTodaysEmailR = do
   (nowYear, nowMonth, nowDay) <- (liftIO getCurrentTime) >>= (return . toGregorian . utctDay) 
   maybeReminder <- runDB $ selectFirst 
-                   [ReminderContent !=. "secret day", ReminderDay ==. nowDay, ReminderMonth ==. nowMonth] 
+                   [ReminderDay ==. (DoM nowDay), ReminderMonth ==. (MoY nowMonth)] 
                    [LimitTo 1]
   runInnerHandler <- handlerToIO  
   case (maybeReminder :: Maybe (Entity Reminder)) of
     Nothing -> do 
       _ <- liftIO $ forkIO $ runInnerHandler $
         liftIO $ (mailNotFound nowDay nowMonth) >>= renderSendMail
-      redirect ( ReminderindexR )
+      redirect ( HomeR )
     Just reminderEntity -> do
       _ <- liftIO $ forkIO $ runInnerHandler $ do
         liftIO $ (mailReminder . reminderContent . entityVal) reminderEntity >>= renderSendMail
-      redirect ( ReminderindexR )
+      redirect ( HomeR )
   where thd = \(_, _, c) -> c
 
 mailNotFound day month =
@@ -72,7 +72,7 @@ mkMail toaddr fromaddr title contents =
 -- insert :: val -> m (Key val)
 -- update :: Key val -> [Update val] -> m ()
 -- replace :: Key val -> val -> m ()
-postReminderR :: Int -> Int -> Handler RepHtml
+postReminderR :: DoM -> MoY -> Handler RepHtml
 postReminderR day month = do
   ((res, reminderForm),enctype) <- runFormPost (enterReminder day month "")
   case res of
@@ -100,7 +100,7 @@ reminderBox = FieldSettings {
 
 -- renderDivs :: FormRender sub master a
 -- areq :: Field sub master a -> FieldSettings master -> Maybe a -> AForm sub master a
-enterReminder :: Int -> Int -> Html -> Form Reminder
+enterReminder :: DoM -> MoY -> Html -> Form Reminder
 enterReminder day month content = renderDivs $ Reminder
     <$> areq hiddenField "" (Just day)
     <*> areq hiddenField "" (Just month)
@@ -112,7 +112,7 @@ getReminderindexR = do
   defaultLayout $(widgetFile "yearview-wrapper")
 
 -- defaultLayout :: Yesod a => GWidget sub a () -> GHandler sub a RepHtml
-getReminderR :: Int -> Int -> Handler RepHtml
+getReminderR :: DoM -> MoY -> Handler RepHtml
 getReminderR day month = do
   mayberem <- runDB $ selectFirst [ReminderDay ==. day, ReminderMonth ==. month] []
   case mayberem of
@@ -130,7 +130,7 @@ getReminderR day month = do
       reminder <- return $(widgetFile "reminder")
       defaultLayout $ do $(widgetFile "reminder-wrapper")      
                          
-blankReminder :: Int -> Int -> Reminder
+blankReminder :: DoM -> MoY -> Reminder
 blankReminder day month = Reminder day month "blank"
 
 -- runDB :: (YesodPersist master) 
