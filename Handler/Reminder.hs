@@ -8,8 +8,8 @@ import Network.Mail.Mime
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Control.Concurrent
 import Data.Time
-import Data.Text
-import Data.Text.Lazy
+import Data.Text as T
+import Data.Text.Lazy as LT
 import Yesod.Auth (maybeAuth)
 
 instance YesodNic App
@@ -39,20 +39,19 @@ getSendTodaysEmailR = do
       _ <- liftIO $ forkIO $ runInnerHandler $ do
         liftIO $ (mailReminder . reminderContent . entityVal) reminderEntity >>= renderSendMail
       redirect ( HomeR )
-  where thd = \(_, _, c) -> c
 
 mailNotFound day month =
   mkMail
     "nicomail@mailinator.com"
     "polymatter@112358.eu"
     "No Reminder Email Today"
-    (renderHtml . toHtml . Data.Text.Lazy.concat $
+    (renderHtml . toHtml . LT.concat $
      ["No Reminder email found for", 
-      Data.Text.Lazy.pack . show $ day,
+      LT.pack . show $ day,
       "/",
-      Data.Text.Lazy.pack . show $ month] )
+      LT.pack . show $ month] )
 
---mailReminder :: Text -> IO Mail
+mailReminder :: Html -> IO Mail
 mailReminder content = 
   mkMail 
     "nicomail@mailinator.com" 
@@ -60,11 +59,11 @@ mailReminder content =
     "Test Reminder Email"
     (renderHtml content)
 
---mymail :: Text -> Text -> Text -> Data.Text.Lazy.Internal.Text -> IO Mail
+mkMail :: T.Text -> T.Text -> T.Text -> LT.Text -> IO Mail
 mkMail toaddr fromaddr title contents = 
   simpleMail
     (Address (Just toaddr)   toaddr)
-    (Address (Just "The Memory Dopefish of Memories") "dopefish@gov.com" )
+    (Address (Just "The Memory Dopefish of Memories") fromaddr )
     title
     contents
     contents
@@ -81,10 +80,11 @@ postReminderR day month = do
       setTitle "You are not logged in"
       $(widgetFile "reminderError")
     Just userEntity -> do
-      ((res, reminderForm),enctype) <- runFormPost (enterReminder (entityKey userEntity) day month "")
+      userId <- return $ entityKey userEntity
+      ((res, reminderForm),enctype) <- runFormPost (enterReminder day month "" userId)
       case res of
         FormSuccess reminderR -> do
-          mayberem <- runDB $ getBy $ UniqueReminder day month (entityKey userEntity)
+          mayberem <- runDB $ getBy $ UniqueReminder day month userId
           case mayberem of
             Just reminderEntity -> do
               runDB (update (entityKey reminderEntity) [ReminderContent =. (reminderContent reminderR)])
@@ -107,8 +107,8 @@ reminderBox = FieldSettings {
 
 -- renderDivs :: FormRender sub master a
 -- areq :: Field sub master a -> FieldSettings master -> Maybe a -> AForm sub master a
-enterReminder :: UserId -> DoM -> MoY -> Html -> Form Reminder
-enterReminder userId day month content = renderDivs $ Reminder
+enterReminder :: DoM -> MoY -> Html -> UserId -> Form Reminder
+enterReminder day month content userId = renderDivs $ Reminder
     <$> areq hiddenField "" (Just day)
     <*> areq hiddenField "" (Just month)
     <*> areq nicHtmlField reminderBox (Just content)
@@ -126,19 +126,19 @@ getReminderR day month = do
   case maybeLogin of
     Nothing -> redirect HomeR
     Just userEntity -> do
-      user <- return $ entityKey userEntity
-      mayberem <- runDB $ getBy $ UniqueReminder day month user
+      userId <- return $ entityKey userEntity
+      mayberem <- runDB $ getBy $ UniqueReminder day month userId
       case mayberem of
         Nothing -> do
-          _ <- runDB $ insert $ blankReminder day month user
-          reminderR <- return $ blankReminder day month user
-          (reminderForm, enctype) <- generateFormPost (enterReminder user day month "")
+          _ <- runDB $ insert $ blankReminder day month userId
+          reminderR <- return $ blankReminder day month userId
+          (reminderForm, enctype) <- generateFormPost (enterReminder day month "" userId)
           yearview <- return $(widgetFile "yearview")
           reminder <- return $(widgetFile "reminder")
           defaultLayout $ do $(widgetFile "reminder-wrapper")     
         Just reminderEntity -> do
           reminderR <- return $ entityVal reminderEntity
-          (reminderForm, enctype) <- generateFormPost (enterReminder user day month (reminderContent reminderR))
+          (reminderForm, enctype) <- generateFormPost (enterReminder day month (reminderContent reminderR) userId)
           yearview <- return $(widgetFile "yearview")
           reminder <- return $(widgetFile "reminder")
           defaultLayout $ do $(widgetFile "reminder-wrapper")      
