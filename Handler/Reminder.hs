@@ -9,9 +9,12 @@ import Network.Mail.Mime
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Control.Concurrent
 import Data.Time
+import Data.Time.Calendar.MonthDay (monthLength)
 import Data.Text as T
 import Data.Text.Lazy as LT
 import Yesod.Auth (maybeAuth)
+import Data.List as L (unfoldr)
+import GHC.List as G (reverse)
 
 instance YesodNic App
 
@@ -118,7 +121,7 @@ enterReminder day month content userId = renderDivs $ Reminder
     <*> areq hiddenField "" (Just userId)
 
 getReminderindexR :: Handler RepHtml
-getReminderindexR = do 
+getReminderindexR = do
   yearview <- return $(widgetFile "yearview")
   defaultLayout $(widgetFile "yearview-wrapper")
 
@@ -166,5 +169,5 @@ getMonthName (MoY i)
  | i == 12   = "December"
  | otherwise = T.concat ["invalid month id: ", T.pack $ show i]
                
-allMonthNames :: [T.Text]
-allMonthNames = Import.map getMonthName $ Import.map MoY [1..12]
+listFrom1ToX :: Int -> [Int]
+listFrom1ToX x = G.reverse $ L.unfoldr (\i -> if i <= 0 then Nothing else Just (i, i-1)) x

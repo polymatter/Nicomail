@@ -3,8 +3,12 @@ table.month {
 }
 
 td {
-  width: 5em;
+  width: 2em;
   text-align:center;
+}
+
+th {
+  border: #22CC22 solid 1px;
 }
 
 td.day {

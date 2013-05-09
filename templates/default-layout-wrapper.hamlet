@@ -24,26 +24,23 @@ $newline never
 
         <script>
           document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
-    <body>
-        <div class="navbar navbar-inverse navbar-fixed-top">
+    <body style="padding-top: 60px;">
+        <div class="navbar navbar-fixed-top">
           <div class="navbar-inner">
             <div class="container">
-              <a class="brand" href=@{ReminderindexR}>The Dopefish Journal of Memories
-            
-        <header class="jumbotron subhead" id="overview">
-          <div class="container">
-            <h1>Stuff here        
-            $maybe userId <- maybeLogin
-              <p>Welcome subject #{userEmail $ entityVal userId}
-              <p>
-                <a href=@{AuthR LogoutR}>Logout
-              <p>
-            $nothing
-              <p>
-                <a href=@{AuthR LoginR}>Login
-              <p>
-            <div id="main" role="main">
-              ^{pageBody pc}
+              <ul class="nav">
+                  <li>
+                      <a class="brand" href=@{ReminderindexR}>The Dopefish Journal of Memories
+                $maybe userId <- maybeLogin
+                  <li class="purple">
+                      <a href="#">Welcome back #{userEmail $ entityVal userId}!
+                  <li>
+                      <a href=@{AuthR LogoutR}>Logout
+                $nothing
+                  <li>
+                      <a href=@{AuthR LoginR}>Login
+        <div id="main" role="main">
+             ^{pageBody pc}
         <footer class="footer">
           <div class="container">
             <p>#{extraCopyright $ appExtra $ settings master}
