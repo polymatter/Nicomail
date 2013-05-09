@@ -2,7 +2,7 @@ Default: &defaults
   host: "*4" # any IPv4 host
   port: 3000
   approot: "http://112358.eu:3000"
-  copyright: This site was build by Polymatter 
+  copyright: Built by Polymatter
   #analytics: UA-YOURCODE
 
 Development:

@@ -9,10 +9,12 @@ $newline never
         <meta charset="UTF-8">
 
         <title>#{pageTitle pc}
-        <meta name="description" content="">
-        <meta name="author" content="">
+        <meta name="description" content="Haskell on Yesod built Reminder/Journal">
+        <meta name="author" content="polymatter">
 
         <meta name="viewport" content="width=device-width,initial-scale=1">
+
+        <link rel="stylesheet" href=@{StaticR css_bootstrap_css}>
 
         ^{pageHead pc}
 
@@ -23,22 +25,31 @@ $newline never
         <script>
           document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
     <body>
-        <h1><a class="brand" href=@{ReminderindexR}>The Dopefish Journal of Memories
-        $maybe userId <- maybeLogin
+        <div class="navbar navbar-inverse navbar-fixed-top">
+          <div class="navbar-inner">
+            <div class="container">
+              <a class="brand" href=@{ReminderindexR}>The Dopefish Journal of Memories
+            
+        <header class="jumbotron subhead" id="overview">
+          <div class="container">
+            <h1>Stuff here        
+            $maybe userId <- maybeLogin
               <p>Welcome subject #{userEmail $ entityVal userId}
               <p>
                 <a href=@{AuthR LogoutR}>Logout
               <p>
-        $nothing
+            $nothing
               <p>
                 <a href=@{AuthR LoginR}>Login
               <p>
-        <div class="container">
-            <header>
             <div id="main" role="main">
               ^{pageBody pc}
-            <footer>
-                #{extraCopyright $ appExtra $ settings master}
+        <footer class="footer">
+          <div class="container">
+            <p>#{extraCopyright $ appExtra $ settings master}
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">
+        <script src=@{StaticR js_bootstrap_js}>
 
         $maybe analytics <- extraAnalytics $ appExtra $ settings master
             <script>
@@ -56,3 +67,4 @@ $newline never
             <script>
                 window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
         \<![endif]-->
+         

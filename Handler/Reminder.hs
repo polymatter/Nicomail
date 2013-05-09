@@ -4,6 +4,7 @@ module Handler.Reminder where
 import Import
 import Yesod.Form.Nic (YesodNic, nicHtmlField)
 --import Yesod.Form.Jquery --may be interesting date stuff in here for later
+--import Text.Email.Validate --to validate email addresses
 import Network.Mail.Mime
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Control.Concurrent
@@ -25,28 +26,30 @@ instance YesodNic App
 
 getSendTodaysEmailR :: Handler RepHtml
 getSendTodaysEmailR = do
-  (nowYear, nowMonth, nowDay) <- (liftIO getCurrentTime) >>= (return . toGregorian . utctDay) 
+  (_, monthAsInt, dayAsInt) <- (liftIO getCurrentTime) >>= (return . toGregorian . utctDay) 
+  (month, day) <- return ( MoY monthAsInt , DoM dayAsInt)
   maybeReminder <- runDB $ selectFirst 
-                   [ReminderDay ==. (DoM nowDay), ReminderMonth ==. (MoY nowMonth)] 
+                   [ReminderDay ==. day, ReminderMonth ==. month] 
                    [LimitTo 1]
   runInnerHandler <- handlerToIO  
   case (maybeReminder :: Maybe (Entity Reminder)) of
     Nothing -> do 
       _ <- liftIO $ forkIO $ runInnerHandler $
-        liftIO $ (mailNotFound nowDay nowMonth) >>= renderSendMail
+        liftIO $ (mailNotFound day month) >>= renderSendMail
       redirect ( HomeR )
     Just reminderEntity -> do
       _ <- liftIO $ forkIO $ runInnerHandler $ do
         liftIO $ (mailReminder . reminderContent . entityVal) reminderEntity >>= renderSendMail
       redirect ( HomeR )
 
+mailNotFound :: DoM -> MoY -> IO Mail
 mailNotFound day month =
   mkMail
     "nicomail@mailinator.com"
     "polymatter@112358.eu"
     "No Reminder Email Today"
     (renderHtml . toHtml . LT.concat $
-     ["No Reminder email found for", 
+     ["No Reminder email found for ", 
       LT.pack . show $ day,
       "/",
       LT.pack . show $ month] )
@@ -146,9 +149,22 @@ getReminderR day month = do
 blankReminder :: DoM -> MoY -> UserId -> Reminder
 blankReminder day month userId = Reminder day month "blank" userId
 
--- runDB :: (YesodPersist master) 
---    => YesodDB sub master a -> GHandler sub master a
 
--- insert 
-
--- seedDatabase
+getMonthName :: MoY -> T.Text
+getMonthName (MoY i)
+ | i == 1    = "January"
+ | i == 2    = "February"
+ | i == 3    = "March"
+ | i == 4    = "April"
+ | i == 5    = "May"
+ | i == 6    = "June"
+ | i == 7    = "July"
+ | i == 8    = "August"
+ | i == 9    = "September"
+ | i == 10   = "October"
+ | i == 11   = "November"
+ | i == 12   = "December"
+ | otherwise = T.concat ["invalid month id: ", T.pack $ show i]
+               
+allMonthNames :: [T.Text]
+allMonthNames = Import.map getMonthName $ Import.map MoY [1..12]
