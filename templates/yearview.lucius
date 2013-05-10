@@ -20,7 +20,12 @@ td.emptyday {
   background-color: #555555
 }
 
-td.remindday {
+td.todayday {
   border: #CC2222 solid 2px;
   background-color: #FFAAAA
+}
+
+td.selectedday {
+  border: #2222CC soldi 2px;
+  background-color: #AAAAFF
 }

@@ -7,9 +7,14 @@
         <table class="month table table-bordered">
           <thead><tr><th colspan="7" class="month">#{getMonthName (MoY m)}
           <tbody>
-            $forall d <- listFrom1ToX (monthLength True m)  
-              $if (mod d 7 == 1)
-                <tr>
-              <td class="day"><a class="btn btn-link" href=@{ReminderR (DoM d) (MoY m)}>#{d}               
-            $forall _ <- listFrom1ToX (35 - (monthLength True m))
-              <td class="emptyday">
+              $forall d <- listFrom1ToX (monthLength True m) 
+                $if ((mod d 7) == 1)
+                  <tr>
+                $if boolAnd ((getDay day) == d) ((getMth month) == m)
+                  <td class="selectedday"><a class="btn btn-link" href=@{ReminderR (DoM d) (MoY m)}>#{d}
+                $elseif boolAnd (todayDay == d) (todayMonth == m)
+                  <td class="todayday"><a class="btn btn-link" href=@{ReminderR (DoM d) (MoY m)}>#{d}
+                $else
+                  <td class="day"><a class="btn btn-link" href=@{ReminderR (DoM d) (MoY m)}>#{d}               
+              $forall _ <- listFrom1ToX (35 - (monthLength True m))
+                <td class="emptyday">

@@ -16,6 +16,7 @@ import Yesod.Auth (maybeAuth)
 import Data.List as L (unfoldr)
 import GHC.List as G (reverse)
 
+
 instance YesodNic App
 
 -- liftIO :: IO a -> m a
@@ -27,9 +28,12 @@ instance YesodNic App
 --    liftIO $ testmail (reminderContent reminder) >>= renderSendMail
 --  redirect $ ReminderindexR
 
+todayAsTriple :: Handler (Integer,Int,Int)
+todayAsTriple = (liftIO getCurrentTime) >>= (return . toGregorian . utctDay) 
+
 getSendTodaysEmailR :: Handler RepHtml
 getSendTodaysEmailR = do
-  (_, monthAsInt, dayAsInt) <- (liftIO getCurrentTime) >>= (return . toGregorian . utctDay) 
+  (_, monthAsInt, dayAsInt) <- todayAsTriple
   (month, day) <- return ( MoY monthAsInt , DoM dayAsInt)
   maybeReminder <- runDB $ selectFirst 
                    [ReminderDay ==. day, ReminderMonth ==. month] 
@@ -122,6 +126,8 @@ enterReminder day month content userId = renderDivs $ Reminder
 
 getReminderindexR :: Handler RepHtml
 getReminderindexR = do
+  (_, todayMonth, todayDay) <- todayAsTriple
+  (day, month) <- return (nonexistantDay, nonexistantMonth)
   yearview <- return $(widgetFile "yearview")
   defaultLayout $(widgetFile "yearview-wrapper")
 
@@ -134,6 +140,7 @@ getReminderR day month = do
     Just userEntity -> do
       userId <- return $ entityKey userEntity
       mayberem <- runDB $ getBy $ UniqueReminder day month userId
+      (_, todayMonth, todayDay) <- todayAsTriple
       case mayberem of
         Nothing -> do
           _ <- runDB $ insert $ blankReminder day month userId
@@ -149,10 +156,21 @@ getReminderR day month = do
           reminder <- return $(widgetFile "reminder")
           defaultLayout $ do $(widgetFile "reminder-wrapper")      
                          
+-- represents a brand new reminder when none has been created before
 blankReminder :: DoM -> MoY -> UserId -> Reminder
 blankReminder day month userId = Reminder day month "blank" userId
 
+-- represents the null Day. needed because we can't have undefined parameters and yearview currently needs a day
+nonexistantDay :: DoM
+nonexistantDay = DoM 0
 
+-- represents the null Month. needed because we can't have undefined parameters and yearview currently needs a 
+-- month
+nonexistantMonth :: MoY
+nonexistantMonth = MoY 0
+
+-- this is not the Show instance because the Show typeclass defines other classes I don't need right now
+-- otherwise, yes this could be a Show instance
 getMonthName :: MoY -> T.Text
 getMonthName (MoY i)
  | i == 1    = "January"
@@ -169,5 +187,11 @@ getMonthName (MoY i)
  | i == 12   = "December"
  | otherwise = T.concat ["invalid month id: ", T.pack $ show i]
                
+-- | Bypass function: (..) function inaccessible. This replicates the behaviour for hamlet template
 listFrom1ToX :: Int -> [Int]
 listFrom1ToX x = G.reverse $ L.unfoldr (\i -> if i <= 0 then Nothing else Just (i, i-1)) x
+
+-- | Bypass function: (&&) function inaccessible. This replicates the behaviour for hamlet template
+boolAnd :: Bool -> Bool -> Bool
+boolAnd True b = b
+boolAnd _    _ = False
