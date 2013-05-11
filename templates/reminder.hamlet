@@ -6,6 +6,6 @@
         Previous Entry:
       <p>#{reminderContent reminderR}
 
-      <form method=post>
+      <form method=post action=@{ReminderR (reminderDay reminderR) (reminderMonth reminderR)}>
         ^{reminderForm}
-      <input type=submit value="Save">
+        <input class="btn" type=submit value="Save">

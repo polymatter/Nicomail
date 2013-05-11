@@ -9,23 +9,32 @@ td {
 
 th {
   border: #22CC22 solid 1px;
+  text-align:center;
 }
 
 td.day {
   border: #22CC22 solid 1px;
+  text-align:center;
+  padding:0px;
 }
 
 td.emptyday {
   border: #22CC22 solid 1px;
-  background-color: #555555
+  background-color: #555555;
+  text-align:center;
+  padding:0px;
 }
 
 td.todayday {
   border: #CC2222 solid 2px;
-  background-color: #FFAAAA
+  background-color: #FFAAAA;
+  text-align:center;
+  padding:0px;
 }
 
 td.selectedday {
-  border: #2222CC soldi 2px;
-  background-color: #AAAAFF
+  border: #2222CC solid 2px;
+  background-color: #AAAAFF;
+  text-align:center;
+  padding:0px;
 }

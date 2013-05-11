@@ -4,17 +4,23 @@
     $if (mod m 2 == 1)
       <div class="row-fluid">
     <div class="span5">
-        <table class="month table table-bordered">
-          <thead><tr><th colspan="7" class="month">#{getMonthName (MoY m)}
+        <table class="table table-bordered month">
+          <thead><tr><th colspan=#{monthSpan} class="month">#{getMonthName (MoY m)}
           <tbody>
-              $forall d <- listFrom1ToX (monthLength True m) 
-                $if ((mod d 7) == 1)
-                  <tr>
-                $if boolAnd ((getDay day) == d) ((getMth month) == m)
-                  <td class="selectedday"><a class="btn btn-link" href=@{ReminderR (DoM d) (MoY m)}>#{d}
-                $elseif boolAnd (todayDay == d) (todayMonth == m)
-                  <td class="todayday"><a class="btn btn-link" href=@{ReminderR (DoM d) (MoY m)}>#{d}
-                $else
-                  <td class="day"><a class="btn btn-link" href=@{ReminderR (DoM d) (MoY m)}>#{d}               
-              $forall _ <- listFrom1ToX (35 - (monthLength True m))
-                <td class="emptyday">
+            $forall r <- listFrom1ToX (div (monthLength True m) monthSpan)
+              <tr>
+                $forall c <- listFrom1ToX monthSpan
+                  $with d <- dayFromRowAndColumn r c
+                    <td class=#{cssClass (day, month) (DoM todayDay, MoY todayMonth) (DoM d, MoY m)}>
+                      <a class="btn btn-link" href=@{ReminderR (DoM d) (MoY m)}>#{d}
+            $if (mod (monthLength True m) monthSpan) == 0
+            $else 
+              <tr>
+                $forall c <- listFrom1ToX monthSpan
+                  $with d <- dayFromRowAndColumn ((div (monthLength True m) monthSpan) + 1) c
+                    $with f <- cssClass (day, month) (DoM todayDay, MoY todayMonth) (DoM d, MoY m)
+                      $if f == "emptyday"
+                        <td class="emptyday">
+                      $else
+                        <td class=#{f}>
+                          <a class="btn btn-link" href=@{ReminderR (DoM d) (MoY m)}>#{d} 

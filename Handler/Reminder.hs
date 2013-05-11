@@ -35,19 +35,16 @@ getSendTodaysEmailR :: Handler RepHtml
 getSendTodaysEmailR = do
   (_, monthAsInt, dayAsInt) <- todayAsTriple
   (month, day) <- return ( MoY monthAsInt , DoM dayAsInt)
-  maybeReminder <- runDB $ selectFirst 
-                   [ReminderDay ==. day, ReminderMonth ==. month] 
-                   [LimitTo 1]
-  runInnerHandler <- handlerToIO  
-  case (maybeReminder :: Maybe (Entity Reminder)) of
-    Nothing -> do 
-      _ <- liftIO $ forkIO $ runInnerHandler $
-        liftIO $ (mailNotFound day month) >>= renderSendMail
-      redirect ( HomeR )
-    Just reminderEntity -> do
-      _ <- liftIO $ forkIO $ runInnerHandler $ do
-        liftIO $ (mailReminder . reminderContent . entityVal) reminderEntity >>= renderSendMail
-      redirect ( HomeR )
+  reminderList <- runDB $ selectList [ReminderDay ==. day, ReminderMonth ==. month] []
+  sequence $ Import.map
+    (\reminder -> do
+        runInnerHandler <- handlerToIO  
+        _ <- liftIO $ forkIO $ runInnerHandler $ 
+          liftIO $ (mailReminder . reminderContent . entityVal) reminder >>= renderSendMail
+        return ()
+    ) 
+    reminderList
+  redirect HomeR -- need to end with a Handler somehow but don't really want to do anything
 
 mailNotFound :: DoM -> MoY -> IO Mail
 mailNotFound day month =
@@ -195,3 +192,17 @@ listFrom1ToX x = G.reverse $ L.unfoldr (\i -> if i <= 0 then Nothing else Just (
 boolAnd :: Bool -> Bool -> Bool
 boolAnd True b = b
 boolAnd _    _ = False
+
+-- | selects the appropriate class for each day
+cssClass :: (DoM, MoY) -> (DoM, MoY) -> (DoM, MoY) -> T.Text
+cssClass selected today current@(DoM d, MoY m)
+  | current == selected    = "selectedday"
+  | current == today       = "todayday" 
+  | d > monthLength True m = "emptyday"
+  | otherwise              = "day"
+                          
+monthSpan :: Int
+monthSpan = 8
+
+dayFromRowAndColumn :: Int -> Int -> Int
+dayFromRowAndColumn row col = (row-1) * monthSpan + col
