@@ -202,7 +202,10 @@ cssClass selected today current@(DoM d, MoY m)
   | otherwise              = "day"
                           
 monthSpan :: Int
-monthSpan = 8
+monthSpan = 31
+
+monthColumns :: Int
+monthColumns = 1
 
 dayFromRowAndColumn :: Int -> Int -> Int
 dayFromRowAndColumn row col = (row-1) * monthSpan + col

@@ -1,5 +1,5 @@
 
 #reminderBox {
-  width: 35em;
-  height: 50em;
+  width: 25em;
+  height: 25em;
 }

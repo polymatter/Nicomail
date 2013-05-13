@@ -1,18 +1,22 @@
 
 <div class="container-fluid">
   $forall m <- listFrom1ToX 12
-    $if (mod m 2 == 1)
+    $if (mod m monthColumns == 1) || (m == 1)
       <div class="row-fluid">
-    <div class="span5">
-        <table class="table table-bordered month">
+    <div class="span#{ show (div 12 monthColumns)}">
+        <table class="month">
           <thead><tr><th colspan=#{monthSpan} class="month">#{getMonthName (MoY m)}
           <tbody>
             $forall r <- listFrom1ToX (div (monthLength True m) monthSpan)
               <tr>
                 $forall c <- listFrom1ToX monthSpan
                   $with d <- dayFromRowAndColumn r c
-                    <td class=#{cssClass (day, month) (DoM todayDay, MoY todayMonth) (DoM d, MoY m)}>
-                      <a class="btn btn-link" href=@{ReminderR (DoM d) (MoY m)}>#{d}
+                    $with f <- cssClass (day, month) (DoM todayDay, MoY todayMonth) (DoM d, MoY m)
+                      $if f == "emptyday"
+                        <td class="emptyday">
+                      $else
+                      <td class=#{f}>
+                        <a class="btn btn-link" href=@{ReminderR (DoM d) (MoY m)}>#{d}
             $if (mod (monthLength True m) monthSpan) == 0
             $else 
               <tr>
@@ -23,4 +27,4 @@
                         <td class="emptyday">
                       $else
                         <td class=#{f}>
-                          <a class="btn btn-link" href=@{ReminderR (DoM d) (MoY m)}>#{d} 
+                          <a class="btn btn-link" href=@{ReminderR (DoM d) (MoY m)}>#{d}

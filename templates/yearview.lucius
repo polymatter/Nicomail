@@ -1,15 +1,17 @@
 table.month {
   border: green solid 3px;
+  border-spacing:0;
+  border-collapse:collapse;
 }
 
 td {
-  width: 2em;
+  width: 3em;
   text-align:center;
 }
 
 th {
   border: #22CC22 solid 1px;
-  text-align:center;
+  text-align:left;
 }
 
 td.day {

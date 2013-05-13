@@ -1,7 +1,7 @@
 
 <div class="container-fluid">
   <div class="row-fluid">
-    <div class="span7">
+    <div class="span9">
       ^{yearview}
-    <div class="span5">
+    <div class="span3">
       ^{reminder}
