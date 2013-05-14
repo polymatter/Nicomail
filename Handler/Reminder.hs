@@ -184,6 +184,9 @@ getMonthName (MoY i)
  | i == 12   = "December"
  | otherwise = T.concat ["invalid month id: ", T.pack $ show i]
                
+getMonthNameShort :: MoY -> T.Text
+getMonthNameShort = T.toUpper . (T.take 3) . getMonthName
+
 -- | Bypass function: (..) function inaccessible. This replicates the behaviour for hamlet template
 listFrom1ToX :: Int -> [Int]
 listFrom1ToX x = G.reverse $ L.unfoldr (\i -> if i <= 0 then Nothing else Just (i, i-1)) x
@@ -206,6 +209,9 @@ monthSpan = 31
 
 monthColumns :: Int
 monthColumns = 1
+
+monthHeadingOnTop :: Bool
+monthHeadingOnTop = False
 
 dayFromRowAndColumn :: Int -> Int -> Int
 dayFromRowAndColumn row col = (row-1) * monthSpan + col

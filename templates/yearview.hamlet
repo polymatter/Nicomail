@@ -5,10 +5,13 @@
       <div class="row-fluid">
     <div class="span#{ show (div 12 monthColumns)}">
         <table class="month">
-          <thead><tr><th colspan=#{monthSpan} class="month">#{getMonthName (MoY m)}
+          $if monthHeadingOnTop
+            <thead><tr><th colspan=#{monthSpan} class="month">#{getMonthName (MoY m)}
           <tbody>
             $forall r <- listFrom1ToX (div (monthLength True m) monthSpan)
               <tr>
+                $if not monthHeadingOnTop
+                  <td class="month">#{getMonthNameShort (MoY m)}
                 $forall c <- listFrom1ToX monthSpan
                   $with d <- dayFromRowAndColumn r c
                     $with f <- cssClass (day, month) (DoM todayDay, MoY todayMonth) (DoM d, MoY m)
@@ -20,6 +23,8 @@
             $if (mod (monthLength True m) monthSpan) == 0
             $else 
               <tr>
+                $if not monthHeadingOnTop
+                  <td class="month">#{getMonthNameShort (MoY m)}
                 $forall c <- listFrom1ToX monthSpan
                   $with d <- dayFromRowAndColumn ((div (monthLength True m) monthSpan) + 1) c
                     $with f <- cssClass (day, month) (DoM todayDay, MoY todayMonth) (DoM d, MoY m)
