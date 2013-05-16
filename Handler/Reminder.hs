@@ -19,15 +19,6 @@ import GHC.List as G (reverse)
 
 instance YesodNic App
 
--- liftIO :: IO a -> m a
---getSendemailR :: ReminderId -> Handler RepHtml
---getSendemailR reminderId = do
---  reminder <- runDB (get404 reminderId)
---  runInnerHandler <- handlerToIO
---  _ <- liftIO $ forkIO $ runInnerHandler $ do
---    liftIO $ testmail (reminderContent reminder) >>= renderSendMail
---  redirect $ ReminderindexR
-
 todayAsTriple :: Handler (Integer,Int,Int)
 todayAsTriple = (liftIO getCurrentTime) >>= (return . toGregorian . utctDay) 
 
@@ -86,9 +77,9 @@ postReminderR :: DoM -> MoY -> Handler RepHtml
 postReminderR day month = do
   maybeLogin <- maybeAuth
   case maybeLogin of
-    Nothing -> defaultLayout $ do
-      setTitle "You are not logged in"
-      $(widgetFile "reminderError")
+    Nothing -> do
+      setMessage "You can not edit a reminder while you are not logged in"
+      redirect ReminderindexR
     Just userEntity -> do
       userId <- return $ entityKey userEntity
       email <- return $ userEmail $ entityVal userEntity
@@ -98,14 +89,15 @@ postReminderR day month = do
           mayberem <- runDB $ getBy $ UniqueReminder day month userId
           case mayberem of
             Just reminderEntity -> do
+              setMessage "Successfully updated a reminder/journal entry"
               runDB (update (entityKey reminderEntity) [ReminderContent =. (reminderContent reminderR)])
               redirect $ ReminderR day month
-            Nothing -> defaultLayout $ do
-              setTitle "Can not find that date" 
-              $(widgetFile "reminderError")
-        _ -> defaultLayout $ do
-          setTitle "Please correct your entry form"
-          $(widgetFile "reminderAddError")
+            Nothing -> do
+              setMessage "Can not find that date" 
+              redirect $ ReminderindexR
+        _ -> do
+          setMessage "We have no idea what happened. Somehow, your entry form was not valid."
+          redirect $ ReminderindexR
 
 reminderBox :: FieldSettings master
 reminderBox = FieldSettings { 
@@ -138,7 +130,9 @@ getReminderR :: DoM -> MoY -> Handler RepHtml
 getReminderR day month = do
   maybeLogin <- maybeAuth
   case maybeLogin of
-    Nothing -> redirect HomeR
+    Nothing -> do
+      setMessage "You need to login to view the reminders on a specific day"
+      redirect $ ReminderindexR
     Just userEntity -> do
       userId <- return $ entityKey userEntity
       email <- return $ userEmail $ entityVal userEntity
@@ -149,6 +143,7 @@ getReminderR day month = do
           _ <- runDB $ insert $ blankReminder day month email userId
           reminderR <- return $ blankReminder day month email userId
           (reminderForm, enctype) <- generateFormPost (enterReminder day month "" email userId)
+          setMessage "Created a blank reminder for this day"
           yearview <- return $(widgetFile "yearview")
           reminder <- return $(widgetFile "reminder")
           defaultLayout $ do $(widgetFile "reminder-wrapper")     
