@@ -31,20 +31,23 @@ instance YesodNic App
 todayAsTriple :: Handler (Integer,Int,Int)
 todayAsTriple = (liftIO getCurrentTime) >>= (return . toGregorian . utctDay) 
 
+getSendEmailsR :: DoM -> MoY -> Handler RepHtml
+getSendEmailsR day month = do
+  reminderList <- runDB $ selectList [ReminderDay ==. day, ReminderMonth ==. month] []
+  runInnerHandler <- handlerToIO
+  _ <- liftIO $ forkIO $ runInnerHandler $ do
+    _ <- sequence ( Import.map 
+      (\r -> liftIO (mkReminderMail (reminderEmail $ entityVal r) (reminderContent $ entityVal r) >>= renderSendMail)) 
+      reminderList )
+    return ()
+  setMessage "Emails Sent"
+  redirect HomeR -- need to end with a Handler somehow but don't really want to do anything
+  
 getSendTodaysEmailR :: Handler RepHtml
 getSendTodaysEmailR = do
   (_, monthAsInt, dayAsInt) <- todayAsTriple
   (month, day) <- return ( MoY monthAsInt , DoM dayAsInt)
-  reminderList <- runDB $ selectList [ReminderDay ==. day, ReminderMonth ==. month] []
-  sequence $ Import.map
-    (\reminder -> do
-        runInnerHandler <- handlerToIO  
-        _ <- liftIO $ forkIO $ runInnerHandler $ 
-          liftIO $ (mailReminder . reminderContent . entityVal) reminder >>= renderSendMail
-        return ()
-    ) 
-    reminderList
-  redirect HomeR -- need to end with a Handler somehow but don't really want to do anything
+  redirect $ SendEmailsR day month
 
 mailNotFound :: DoM -> MoY -> IO Mail
 mailNotFound day month =
@@ -58,10 +61,10 @@ mailNotFound day month =
       "/",
       LT.pack . show $ month] )
 
-mailReminder :: Html -> IO Mail
-mailReminder content = 
+mkReminderMail :: T.Text -> Html -> IO Mail
+mkReminderMail emailaddr content = 
   mkMail 
-    "nicomail@mailinator.com" 
+    emailaddr
     "polymatter@112358.eu" 
     "Test Reminder Email"
     (renderHtml content)
@@ -70,7 +73,7 @@ mkMail :: T.Text -> T.Text -> T.Text -> LT.Text -> IO Mail
 mkMail toaddr fromaddr title contents = 
   simpleMail
     (Address (Just toaddr)   toaddr)
-    (Address (Just "The Memory Dopefish of Memories") fromaddr )
+    (Address (Just fromaddr) "The Memory Dopefish of Memories" )
     title
     contents
     contents
@@ -88,7 +91,8 @@ postReminderR day month = do
       $(widgetFile "reminderError")
     Just userEntity -> do
       userId <- return $ entityKey userEntity
-      ((res, reminderForm),enctype) <- runFormPost (enterReminder day month "" userId)
+      email <- return $ userEmail $ entityVal userEntity
+      ((res, reminderForm),enctype) <- runFormPost (enterReminder day month "" email userId)
       case res of
         FormSuccess reminderR -> do
           mayberem <- runDB $ getBy $ UniqueReminder day month userId
@@ -114,11 +118,12 @@ reminderBox = FieldSettings {
 
 -- renderDivs :: FormRender sub master a
 -- areq :: Field sub master a -> FieldSettings master -> Maybe a -> AForm sub master a
-enterReminder :: DoM -> MoY -> Html -> UserId -> Form Reminder
-enterReminder day month content userId = renderDivs $ Reminder
+enterReminder :: DoM -> MoY -> Html -> T.Text -> UserId -> Form Reminder
+enterReminder day month content email userId = renderDivs $ Reminder
     <$> areq hiddenField "" (Just day)
     <*> areq hiddenField "" (Just month)
     <*> areq nicHtmlField reminderBox (Just content)
+    <*> areq hiddenField "" (Just email)
     <*> areq hiddenField "" (Just userId)
 
 getReminderindexR :: Handler RepHtml
@@ -136,26 +141,27 @@ getReminderR day month = do
     Nothing -> redirect HomeR
     Just userEntity -> do
       userId <- return $ entityKey userEntity
+      email <- return $ userEmail $ entityVal userEntity
       mayberem <- runDB $ getBy $ UniqueReminder day month userId
       (_, todayMonth, todayDay) <- todayAsTriple
       case mayberem of
         Nothing -> do
-          _ <- runDB $ insert $ blankReminder day month userId
-          reminderR <- return $ blankReminder day month userId
-          (reminderForm, enctype) <- generateFormPost (enterReminder day month "" userId)
+          _ <- runDB $ insert $ blankReminder day month email userId
+          reminderR <- return $ blankReminder day month email userId
+          (reminderForm, enctype) <- generateFormPost (enterReminder day month "" email userId)
           yearview <- return $(widgetFile "yearview")
           reminder <- return $(widgetFile "reminder")
           defaultLayout $ do $(widgetFile "reminder-wrapper")     
         Just reminderEntity -> do
           reminderR <- return $ entityVal reminderEntity
-          (reminderForm, enctype) <- generateFormPost (enterReminder day month (reminderContent reminderR) userId)
+          (reminderForm, enctype) <- generateFormPost (enterReminder day month (reminderContent reminderR) email userId)
           yearview <- return $(widgetFile "yearview")
           reminder <- return $(widgetFile "reminder")
           defaultLayout $ do $(widgetFile "reminder-wrapper")      
                          
 -- represents a brand new reminder when none has been created before
-blankReminder :: DoM -> MoY -> UserId -> Reminder
-blankReminder day month userId = Reminder day month "blank" userId
+blankReminder :: DoM -> MoY -> T.Text -> UserId -> Reminder
+blankReminder day month email userId = Reminder day month "blank" email userId
 
 -- represents the null Day. needed because we can't have undefined parameters and yearview currently needs a day
 nonexistantDay :: DoM
