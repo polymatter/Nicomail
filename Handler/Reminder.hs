@@ -205,7 +205,7 @@ cssClass selected today current@(DoM d, MoY m)
   | otherwise              = "day"
                           
 monthSpan :: Int
-monthSpan = 31
+monthSpan = 16
 
 monthColumns :: Int
 monthColumns = 1

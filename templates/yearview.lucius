@@ -6,7 +6,6 @@ table.month {
 }
 
 td {
-  width: 5em;
   text-align:center;
   padding: 0px 0px 0px 0px;
   margin: 0;
@@ -18,7 +17,7 @@ th.month {
 }
 
 td.month {
-  text-align:left;
+  text-align:center;
   width: 50px;
 }
 

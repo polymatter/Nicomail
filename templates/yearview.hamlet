@@ -11,7 +11,7 @@
             $forall r <- listFrom1ToX (div (monthLength True m) monthSpan)
               <tr>
                 $if not monthHeadingOnTop
-                  <td class="month">#{getMonthNameShort (MoY m)}
+                  <td class="month" rowSpan=#{(div (monthLength True m) monthSpan) + 1}>#{getMonthNameShort (MoY m)}
                 $forall c <- listFrom1ToX monthSpan
                   $with d <- dayFromRowAndColumn r c
                     $with f <- cssClass (day, month) (DoM todayDay, MoY todayMonth) (DoM d, MoY m)
@@ -23,8 +23,9 @@
             $if (mod (monthLength True m) monthSpan) == 0
             $else 
               <tr>
-                $if not monthHeadingOnTop
-                  <td class="month">#{getMonthNameShort (MoY m)}
+                $if (not monthHeadingOnTop)
+                  $if (monthLength True m) < monthSpan
+                    <td class="month">#{getMonthNameShort (MoY m)}
                 $forall c <- listFrom1ToX monthSpan
                   $with d <- dayFromRowAndColumn ((div (monthLength True m) monthSpan) + 1) c
                     $with f <- cssClass (day, month) (DoM todayDay, MoY todayMonth) (DoM d, MoY m)
