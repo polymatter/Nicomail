@@ -8,20 +8,22 @@
         $forall reminderR <- reminderRs
             <div class="accordion-group">
                 <div class="accordion-heading">
-                  <a class="btn btn-primary" data-toggle="collapse" data-parent="#accordionTop" href="#collapse#{getthd reminderR}">
+                  <a class="btn" data-toggle="collapse" data-parent="#accordionTop" href="#collapse#{ident reminderR}">
+                    <i class="icon-chevron-down">
                     Edit
-                  This will be a few words from the reminder content followed by an ellipses ...
-                <div id="collapse#{getthd reminderR}" class="accordion-body collapse in">
+                  #{synopsis reminderR}
+                <div id="collapse#{ident reminderR}" class="accordion-body collapse">
                   <div class="accordion-inner">
-                    <form method=post action=@{UpdateReminderR (getfst reminderR)}>
-                      ^{getsnd reminderR}
+                    <form method=post action=@{UpdateReminderR (reminderId reminderR)}>
+                      ^{widget reminderR}
                       <input class="btn btn-primary" type=submit value="Save">
                       <a class="btn btn-danger" type=button>Delete?
         <div class="accordion-group">
               <div class="accordion-heading">
-                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordionTop" href="#collapse2">
-                  Create New Reminder
-              <div id="collapse2" class="accordion-body collapse in">
+                <a class="btn" data-toggle="collapse" data-parent="#accordionTop" href="#collapseNew">
+                  <i class="icon-chevron-down">
+                  New
+              <div id="collapseNew" class="accordion-body collapse">
                 <div class="accordion-inner">
                   <form method=post action=@{NewReminderR}>
                     ^{newReminder}

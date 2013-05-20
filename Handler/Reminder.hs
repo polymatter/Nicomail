@@ -109,7 +109,7 @@ reminderBox = FieldSettings {
   fsName = Just "reminderBox", 
   fsLabel = "What do you want to remember about this day?",
   fsTooltip = Nothing,
-  fsAttrs = [("class", "reminderBox")]
+  fsAttrs = [("rows", "3")]
   }
 
 -- renderDivs :: FormRender sub master a
@@ -145,24 +145,26 @@ getReminderR day month = do
       reminderList <- runDB $ selectList [ReminderDay ==. day, ReminderMonth ==. month, ReminderOwnerId ==. userId] [LimitTo 1]
       reminderRs <- Import.sequence $ Import.map 
                         (\r -> do
-                            (form, _) <- generateFormPost $ enterReminder day month (reminderContent $ entityVal r) email userId
+                            (widget, _) <- generateFormPost $ enterReminder day month (reminderContent $ entityVal r) email userId
                             reminderId <- return $ entityKey r
                             ident <- newIdent
-                            return (reminderId :: ReminderId, form :: Widget, ident :: T.Text)
+                            synopsis <- (return . mksynopsis . renderHtml . reminderContent . entityVal) r
+                            return $ ReminderView {
+                              reminderId=reminderId, widget=widget, ident=ident, synopsis=synopsis
+                              }
                         )
                         reminderList
       yearview <- return $(widgetFile "yearview")
       reminder <- return $(widgetFile "reminder")
-      defaultLayout $ do $(widgetFile "reminder-wrapper")      
-                         
-getthd :: (a, b, c) -> c
-getthd (_,_,c) = c
-                             
-getsnd :: (a, b, c) -> b
-getsnd (_,b,_) = b
+      defaultLayout $ do $(widgetFile "reminder-wrapper")
+        where mksynopsis :: LT.Text -> LT.Text
+              mksynopsis = (flip LT.append) " ..." . LT.concat . Import.map (LT.append " ") . Import.take 6 . LT.words
 
-getfst :: (a, b, c) -> a
-getfst (a, _, _) = a
+data ReminderView = ReminderView { reminderId :: ReminderId 
+                                 , widget :: Widget
+                                 , ident :: T.Text
+                                 , synopsis :: LT.Text
+                                 }
                  
 -- represents a brand new reminder when none has been created before
 blankReminder :: DoM -> MoY -> T.Text -> UserId -> Reminder
