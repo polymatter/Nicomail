@@ -2,10 +2,27 @@
 <div class="container-fluid">
   <div class="row-fluid">
     <div class="span12">
-      <h2>
-        Previous Entry:
-      <p>#{reminderContent reminderR}
-
-      <form method=post action=@{ReminderR (reminderDay reminderR) (reminderMonth reminderR)}>
-        ^{reminderForm}
-        <input class="btn" type=submit value="Save">
+      <div class="accordion" id="accordionTop">
+        $if Import.null reminderRs
+          <p>No Reminders!
+        $forall reminderR <- reminderRs
+            <div class="accordion-group">
+                <div class="accordion-heading">
+                  <a class="btn btn-primary" data-toggle="collapse" data-parent="#accordionTop" href="#collapse#{getthd reminderR}">
+                    Edit
+                  This will be a few words from the reminder content followed by an ellipses ...
+                <div id="collapse#{getthd reminderR}" class="accordion-body collapse in">
+                  <div class="accordion-inner">
+                    <form method=post action=@{UpdateReminderR (getfst reminderR)}>
+                      ^{getsnd reminderR}
+                      <input class="btn btn-primary" type=submit value="Save">
+                      <a class="btn btn-danger" type=button>Delete?
+        <div class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordionTop" href="#collapse2">
+                  Create New Reminder
+              <div id="collapse2" class="accordion-body collapse in">
+                <div class="accordion-inner">
+                  <form method=post action=@{NewReminderR}>
+                    ^{newReminder}
+                    <input class="btn btn-success" type=submit value="Create">

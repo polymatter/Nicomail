@@ -45,7 +45,7 @@ $newline never
           <div class="container">
             <p>#{extraCopyright $ appExtra $ settings master}
 
-        <!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"> -->
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">
         <script src=@{StaticR js_bootstrap_js}>
 
         $maybe analytics <- extraAnalytics $ appExtra $ settings master

@@ -1,11 +1,13 @@
 /static StaticR Static getStatic
 /auth   AuthR   Auth   getAuth
 
-/favicon.ico         FaviconR GET
-/robots.txt          RobotsR  GET
+/favicon.ico           FaviconR         GET
+/robots.txt            RobotsR          GET
 
-/                    HomeR            GET
-/reminders           ReminderindexR   GET
-/reminders/#DoM/#MoY ReminderR        GET POST
-/sendTodaysEmail     SendTodaysEmailR GET
-/sendEmail/#DoM/#MoY SendEmailsR      GET
+/                      HomeR            GET
+/reminders             ReminderindexR   GET
+/newreminder           NewReminderR     POST
+/reminders/#ReminderId UpdateReminderR  POST
+/reminders/#DoM/#MoY   ReminderR        GET
+/sendTodaysEmail       SendTodaysEmailR GET
+/sendEmail/#DoM/#MoY   SendEmailsR      GET

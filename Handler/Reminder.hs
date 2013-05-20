@@ -16,8 +16,10 @@ import Yesod.Auth (maybeAuth)
 import Data.List as L (unfoldr)
 import GHC.List as G (reverse)
 
-
 instance YesodNic App
+
+postNewReminderR :: Handler RepHtml
+postNewReminderR = return undefined
 
 todayAsTriple :: Handler (Integer,Int,Int)
 todayAsTriple = (liftIO getCurrentTime) >>= (return . toGregorian . utctDay) 
@@ -73,8 +75,8 @@ mkMail toaddr fromaddr title contents =
 -- insert :: val -> m (Key val)
 -- update :: Key val -> [Update val] -> m ()
 -- replace :: Key val -> val -> m ()
-postReminderR :: DoM -> MoY -> Handler RepHtml
-postReminderR day month = do
+postUpdateReminderR :: ReminderId -> Handler RepHtml
+postUpdateReminderR reminderId = do
   maybeLogin <- maybeAuth
   case maybeLogin of
     Nothing -> do
@@ -83,20 +85,22 @@ postReminderR day month = do
     Just userEntity -> do
       userId <- return $ entityKey userEntity
       email <- return $ userEmail $ entityVal userEntity
-      ((res, reminderForm),enctype) <- runFormPost (enterReminder day month "" email userId)
-      case res of
-        FormSuccess reminderR -> do
-          mayberem <- runDB $ getBy $ UniqueReminder day month userId
-          case mayberem of
-            Just reminderEntity -> do
+      mayberem <- runDB $ get reminderId
+      case mayberem of
+        Just reminder -> do
+          day <- return $ reminderDay reminder
+          month <- return $ reminderMonth reminder
+          ((res, reminderForm),enctype) <- runFormPost (enterReminder day month "" email userId)
+          case res of
+            FormSuccess reminderR -> do
+              runDB (update reminderId [ReminderContent =. (reminderContent reminderR)])
               setMessage "Successfully updated a reminder/journal entry"
-              runDB (update (entityKey reminderEntity) [ReminderContent =. (reminderContent reminderR)])
               redirect $ ReminderR day month
-            Nothing -> do
-              setMessage "Can not find that date" 
-              redirect $ ReminderindexR
-        _ -> do
-          setMessage "We have no idea what happened. Somehow, your entry form was not valid."
+            _ -> do
+              setMessage "There was some sort of problem with the form. No idea what. Try again. See if it works this time" 
+              redirect $ ReminderR day month
+        Nothing -> do
+          setMessage "We have no idea what happened. Somehow, this particular reminder was not found in the database"
           redirect $ ReminderindexR
 
 reminderBox :: FieldSettings master
@@ -134,26 +138,32 @@ getReminderR day month = do
       setMessage "You need to login to view the reminders on a specific day"
       redirect $ ReminderindexR
     Just userEntity -> do
+      (_, todayMonth, todayDay) <- todayAsTriple
       userId <- return $ entityKey userEntity
       email <- return $ userEmail $ entityVal userEntity
-      mayberem <- runDB $ getBy $ UniqueReminder day month userId
-      (_, todayMonth, todayDay) <- todayAsTriple
-      case mayberem of
-        Nothing -> do
-          _ <- runDB $ insert $ blankReminder day month email userId
-          reminderR <- return $ blankReminder day month email userId
-          (reminderForm, enctype) <- generateFormPost (enterReminder day month "" email userId)
-          setMessage "Created a blank reminder for this day"
-          yearview <- return $(widgetFile "yearview")
-          reminder <- return $(widgetFile "reminder")
-          defaultLayout $ do $(widgetFile "reminder-wrapper")     
-        Just reminderEntity -> do
-          reminderR <- return $ entityVal reminderEntity
-          (reminderForm, enctype) <- generateFormPost (enterReminder day month (reminderContent reminderR) email userId)
-          yearview <- return $(widgetFile "yearview")
-          reminder <- return $(widgetFile "reminder")
-          defaultLayout $ do $(widgetFile "reminder-wrapper")      
+      (newReminder, _) <- generateFormPost $ enterReminder day month "" email userId
+      reminderList <- runDB $ selectList [ReminderDay ==. day, ReminderMonth ==. month, ReminderOwnerId ==. userId] [LimitTo 1]
+      reminderRs <- Import.sequence $ Import.map 
+                        (\r -> do
+                            (form, _) <- generateFormPost $ enterReminder day month (reminderContent $ entityVal r) email userId
+                            reminderId <- return $ entityKey r
+                            ident <- newIdent
+                            return (reminderId :: ReminderId, form :: Widget, ident :: T.Text)
+                        )
+                        reminderList
+      yearview <- return $(widgetFile "yearview")
+      reminder <- return $(widgetFile "reminder")
+      defaultLayout $ do $(widgetFile "reminder-wrapper")      
                          
+getthd :: (a, b, c) -> c
+getthd (_,_,c) = c
+                             
+getsnd :: (a, b, c) -> b
+getsnd (_,b,_) = b
+
+getfst :: (a, b, c) -> a
+getfst (a, _, _) = a
+                 
 -- represents a brand new reminder when none has been created before
 blankReminder :: DoM -> MoY -> T.Text -> UserId -> Reminder
 blankReminder day month email userId = Reminder day month "blank" email userId
