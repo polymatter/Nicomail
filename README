@@ -2,7 +2,7 @@ An app to send email "remember when" reminders
 
 Requires some configuration with cron or equivalent in order to wake the server up to send the reminder emails. Also requires sendmail to actually send the emails and curl to trigger the webserver to send the emails.
 
-cron is a standard UNIX utility that should be on any UNIX server. If this is deployed on a Windows server, there is a utility called AT that does the analogous thing. If this is deployed on a cloud service provider such as Heroku, there will almost certainly be a way of configuring cron jobs. But since we are only going to configure a cronjob to poke the server to send todays email, a better option would be to use a webcron service like https://www.setcronjob.com/prices where daily cronjobs are free.
+cron is a standard UNIX utility that should be on any UNIX server. If this is deployed on a Windows server, there is a utility called AT that does the analogous thing. If this is deployed on a cloud service provider such as Heroku, there will almost certainly be a way of configuring cron jobs. But since we are only going to configure a cronjob to poke the server to send todays email, a better option would be to use some webcron services like https://www.setcronjob.com/prices where daily cronjobs are free and http://www.easycron.com is another free cron job provider which is worth a try.
 
 sendmail is a basic UNIX utility that sends emails and should also be standard on any UNIX server. I expect Haskell to cry foul if you compile without it present and would not be surprised if cabal (the Haskell build program) installs it as part of the program dependencies.
 
